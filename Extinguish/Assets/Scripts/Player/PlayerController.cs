@@ -7,15 +7,19 @@ public class PlayerController : MonoBehaviour {
 	public float playerSpeed = 5.0f;
 	public float jumpForce = 10.0f;
 	public float maxSpeed = 5f;
+	public float waterSprayDelay = 0.1f;
 
 	public float horizontalInput;
 	public float verticalInput;
 
-	public float sprayForce;
+	public float sprayForce = 5.0f;
 
 	private bool grounded = false;
 	public bool jump = true;
 	public bool facingRight;
+
+	public bool shoot;
+
 	public GameObject groundCheck;
 	public Transform rotatingArm;
 
@@ -23,6 +27,15 @@ public class PlayerController : MonoBehaviour {
 
 	public Animator animator;
 	public Rigidbody2D rb2d;
+
+	public GameObject waterParticlePrefab;
+	public GameObject barrelPosition;
+
+	public bool sprayReset;
+	public float sprayDelayB = 0.5f;
+	float sprayDelayC;
+
+	float defaultMass;
 	
 
 
@@ -43,37 +56,51 @@ public class PlayerController : MonoBehaviour {
 	void Start ()
 	{
 		rb2d = GetComponent<Rigidbody2D>();
-		animator = GetComponent<Animator>();	
+		animator = GetComponent<Animator>();
+		sprayDelayC = sprayDelayB;
+
+		defaultMass = rb2d.mass;
 	}
 	
 	// Update is called once per frame
 	void Update ()
 	{
+		// Update variables
 		horizontalInput = Input.GetAxis("Horizontal");
 		verticalInput = Input.GetAxis("Vertical");
-
 		grounded = Physics2D.Linecast(transform.position, groundCheck.transform.position, 1 << LayerMask.NameToLayer("Environment"));
 
-		PlayerStateManager();
-
+		// Jump check.
 		if (verticalInput > 0.5 && grounded && playerState != PlayerStates.Extinguishing)
 		{
 			jump = true;
 		}
-
 		else
 		{
 			jump = false;
 		}
 
+
+		// Spray fire rate.
+		if (!sprayReset && sprayDelayC > 0)
+		{
+			sprayDelayC -= Time.deltaTime;
+		}
+		if (sprayDelayC <= 0)
+		{
+			sprayDelayC = sprayDelayB;
+			sprayReset = true;
+		}
+
+
+		// Functions
 		SetAnimation();
+		PlayerStateManager();
 	}
 
 	void FixedUpdate()
 	{
 		PlayerMovement();
-
-	
 
 	}
 
@@ -82,8 +109,6 @@ public class PlayerController : MonoBehaviour {
 		if (playerState == PlayerStates.Extinguishing)
 		{
 			rotatingArm.Rotate(0f, 0f, verticalInput * 50f);
-			//rotatingArm.transform.eulerAngles = new Vector3(rotatingArm.eulerAngles.x, rotatingArm.eulerAngles.y, Mathf.Atan2(horizontalInput, verticalInput));
-			Debug.Log("ROTATING!");
 		}
 	}
 
@@ -138,9 +163,16 @@ public class PlayerController : MonoBehaviour {
 		if (Input.GetButton("Extinguish") && grounded)
 		{
 			playerState = PlayerStates.Extinguishing;
+			rb2d.mass = 500;
 			rb2d.velocity = new Vector3(0,0,0);
 
 			// Spawn water;
+			PlayerSpray();
+
+		}
+		else
+		{
+			rb2d.mass = defaultMass;
 		}
 
 		if (jump && playerState != PlayerStates.Extinguishing)
@@ -153,9 +185,31 @@ public class PlayerController : MonoBehaviour {
 
 	}
 
+
 	void PlayerStateManager()
 	{
 		
+	}
+
+	void PlayerSpray()
+	{
+		if (sprayReset)
+		{
+			if (horizontalInput > 0)
+			{
+				GameObject waterParticleClone = Instantiate(waterParticlePrefab, barrelPosition.transform.position, barrelPosition.transform.rotation);
+				waterParticleClone.GetComponent<Rigidbody2D>().AddForce(barrelPosition.transform.right * sprayForce);
+				sprayReset = false;
+			}
+			else if (horizontalInput < 0)
+			{
+				GameObject waterParticleClone = Instantiate(waterParticlePrefab, barrelPosition.transform.position, barrelPosition.transform.rotation);
+				waterParticleClone.GetComponent<Rigidbody2D>().AddForce(barrelPosition.transform.right * sprayForce * -1);
+				sprayReset = false;
+			}
+		}
+
+		//Debug.Log(horizontalInput);
 	}
 
 
