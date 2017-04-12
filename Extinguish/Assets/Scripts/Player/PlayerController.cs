@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour {
 	public bool facingRight;
 
 	public bool shoot;
+	public float waterTankTime = 10.0f;
 
 	public GameObject groundCheck;
 	public Transform rotatingArm;
@@ -195,17 +196,19 @@ public class PlayerController : MonoBehaviour {
 	{
 		if (sprayReset)
 		{
-			if (horizontalInput > 0)
+			if (horizontalInput > 0 && waterTankTime > 0)
 			{
 				GameObject waterParticleClone = Instantiate(waterParticlePrefab, barrelPosition.transform.position, barrelPosition.transform.rotation);
 				waterParticleClone.GetComponent<Rigidbody2D>().AddForce(barrelPosition.transform.right * sprayForce);
 				sprayReset = false;
+				waterTankTime -= Time.deltaTime;
 			}
-			else if (horizontalInput < 0)
+			else if (horizontalInput < 0 && waterTankTime > 0)
 			{
 				GameObject waterParticleClone = Instantiate(waterParticlePrefab, barrelPosition.transform.position, barrelPosition.transform.rotation);
 				waterParticleClone.GetComponent<Rigidbody2D>().AddForce(barrelPosition.transform.right * sprayForce * -1);
 				sprayReset = false;
+				waterTankTime -= Time.deltaTime;
 			}
 		}
 

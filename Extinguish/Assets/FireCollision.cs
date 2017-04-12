@@ -28,6 +28,12 @@ public class FireCollision : MonoBehaviour {
 	{
 		if (particleSystem.maxParticles < initialParticles && particleSystem.maxParticles != 0)
 		particleSystem.maxParticles += 1;
+		if (particleSystem.maxParticles <= 0)
+		{
+			// Building is safe.
+			Destroy(this.gameObject);
+			FindObjectOfType<HUDController>().fireOut = true;
+		}
 	}
 
 	void OnParticleCollision(GameObject other)
@@ -35,7 +41,7 @@ public class FireCollision : MonoBehaviour {
 		Debug.Log("Col: " + other.gameObject.name);
 		if (other.GetComponent<WaterParticleController>())
 		{
-			particleSystem.maxParticles -= 1;
+			particleSystem.maxParticles -= 2;
 			Destroy(other);
 		}
 	}
