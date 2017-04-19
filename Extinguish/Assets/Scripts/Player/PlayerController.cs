@@ -76,7 +76,6 @@ public class PlayerController : MonoBehaviour {
 		horizontalInput = Input.GetAxis("Horizontal");
 		verticalInput = Input.GetAxis("Vertical");
 		//grounded = Physics2D.Linecast(transform.position, groundCheck.transform.position, 1 << LayerMask.NameToLayer("Environment"));
-		Debug.DrawLine(transform.position, groundCheck.transform.position);
 
 		if (Physics2D.Linecast(transform.position, groundCheck.transform.position, 1 << LayerMask.NameToLayer("Environment")) || Physics2D.Linecast(transform.position, groundCheck.transform.position, 1 << LayerMask.NameToLayer("Interactable")))
 			grounded = true;
@@ -115,7 +114,6 @@ public class PlayerController : MonoBehaviour {
 	void FixedUpdate()
 	{
 		PlayerMovement();
-
 	}
 
 	void LateUpdate()
@@ -177,7 +175,7 @@ public class PlayerController : MonoBehaviour {
 		if (Input.GetButton("Extinguish") && grounded && playerState != (PlayerStates.Falling | PlayerStates.Jumping))
 		{
 			playerState = PlayerStates.Extinguishing;
-			rb2d.mass = 500;
+			//rb2d.mass = 500;
 			rb2d.velocity = new Vector3(0,0,0);
 
 			// Spawn water;
