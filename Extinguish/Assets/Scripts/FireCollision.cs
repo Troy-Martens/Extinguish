@@ -39,10 +39,15 @@ public class FireCollision : MonoBehaviour {
 	void OnParticleCollision(GameObject other)
 	{
 		Debug.Log("Col: " + other.gameObject.name);
-		if (other.GetComponent<WaterParticleController>())
+		if (other.GetComponent<WaterParticleController>() != null)
 		{
 			particleSystem.maxParticles -= 2;
 			Destroy(other);
+		}
+
+		if (other.GetComponent<PlayerController>() != null)
+		{
+			other.GetComponent<PlayerController>().playerState = PlayerController.PlayerStates.Dead;
 		}
 	}
 }

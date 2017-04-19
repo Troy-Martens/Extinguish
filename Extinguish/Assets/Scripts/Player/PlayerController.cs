@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour {
 
 	public float sprayForce = 5.0f;
 
-	private bool grounded = false;
+	public bool grounded = false;
 	public bool jump = true;
 	public bool facingRight;
 
@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour {
 
 	public Animator animator;
 	public Rigidbody2D rb2d;
+	public GameController gameController;
 
 	public GameObject waterParticlePrefab;
 	public GameObject barrelPosition;
@@ -37,8 +38,11 @@ public class PlayerController : MonoBehaviour {
 	float sprayDelayC;
 
 	float defaultMass;
-	
 
+	public float drownTimerBase = 5f;
+	public float drownTimerCurrent;
+
+	public bool isDrowning = false;
 
 	public enum PlayerStates
 	{
@@ -46,7 +50,7 @@ public class PlayerController : MonoBehaviour {
 		Walking,
 		Extinguishing,
 		Jumping,
-		Dying,
+		Dead,
 		Falling
 	}
 
@@ -61,6 +65,8 @@ public class PlayerController : MonoBehaviour {
 		sprayDelayC = sprayDelayB;
 
 		defaultMass = rb2d.mass;
+		drownTimerCurrent = drownTimerBase;
+		gameController = FindObjectOfType<GameController>();
 	}
 	
 	// Update is called once per frame
@@ -69,7 +75,13 @@ public class PlayerController : MonoBehaviour {
 		// Update variables
 		horizontalInput = Input.GetAxis("Horizontal");
 		verticalInput = Input.GetAxis("Vertical");
-		grounded = Physics2D.Linecast(transform.position, groundCheck.transform.position, 1 << LayerMask.NameToLayer("Environment"));
+		//grounded = Physics2D.Linecast(transform.position, groundCheck.transform.position, 1 << LayerMask.NameToLayer("Environment"));
+		Debug.DrawLine(transform.position, groundCheck.transform.position);
+
+		if (Physics2D.Linecast(transform.position, groundCheck.transform.position, 1 << LayerMask.NameToLayer("Environment")) || Physics2D.Linecast(transform.position, groundCheck.transform.position, 1 << LayerMask.NameToLayer("Interactable")))
+			grounded = true;
+		else
+			grounded = false;
 
 		// Jump check.
 		if (verticalInput > 0.5 && grounded && playerState != PlayerStates.Extinguishing)
@@ -80,7 +92,6 @@ public class PlayerController : MonoBehaviour {
 		{
 			jump = false;
 		}
-
 
 		// Spray fire rate.
 		if (!sprayReset && sprayDelayC > 0)
@@ -96,6 +107,8 @@ public class PlayerController : MonoBehaviour {
 
 		// Functions
 		SetAnimation();
+		PlayerStateManager();
+		DrownTracker();
 		PlayerStateManager();
 	}
 
@@ -161,7 +174,7 @@ public class PlayerController : MonoBehaviour {
 			playerState = PlayerStates.Walking;
 		}
 
-		if (Input.GetButton("Extinguish") && grounded)
+		if (Input.GetButton("Extinguish") && grounded && playerState != (PlayerStates.Falling | PlayerStates.Jumping))
 		{
 			playerState = PlayerStates.Extinguishing;
 			rb2d.mass = 500;
@@ -189,7 +202,22 @@ public class PlayerController : MonoBehaviour {
 
 	void PlayerStateManager()
 	{
-		
+		switch (playerState)
+		{
+			case PlayerStates.Dead:
+				gameController.gameState = GameController.GameStates.GameOver;
+				//enabled = false;
+				break;
+			case PlayerStates.Extinguishing:
+				break;
+			case PlayerStates.Walking:
+
+				break;
+			case PlayerStates.Idle:
+				break;
+			case PlayerStates.Jumping:
+				break;
+		}
 	}
 
 	void PlayerSpray()
@@ -211,9 +239,23 @@ public class PlayerController : MonoBehaviour {
 				waterTankTime -= Time.deltaTime;
 			}
 		}
-
-		//Debug.Log(horizontalInput);
 	}
 
+	void DrownTracker()
+	{
+		if (isDrowning)
+		{
+			drownTimerCurrent -= Time.deltaTime;
+		}
+		else
+		{
+			drownTimerCurrent = drownTimerBase;
+		}
+
+		if (drownTimerCurrent <= 0)
+		{
+			playerState = PlayerStates.Dead;
+		}
+	}
 
 }

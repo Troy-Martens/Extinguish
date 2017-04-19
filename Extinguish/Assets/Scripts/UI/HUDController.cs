@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HUDController : MonoBehaviour {
+public class HUDController : MonoBehaviour
+{
 
 	public Slider slider;
 	public Text winText;
@@ -12,12 +13,19 @@ public class HUDController : MonoBehaviour {
 	public bool fireOut = false;
 
 	public PlayerController playerController;
+	public GameController gameController;
+
+	public GameObject pauseMenu;
+	public GameObject hudObject;
+
+	public bool isActive = false;
 
 	// Use this for initialization
 	void Start ()
 	{
 		slider = GetComponentInChildren<Slider>();
 		playerController = FindObjectOfType<PlayerController>();
+		gameController = FindObjectOfType<GameController>();
 	}
 	
 	// Update is called once per frame
@@ -25,6 +33,7 @@ public class HUDController : MonoBehaviour {
 	{
 		slider.value = playerController.waterTankTime;
 		TWinOrLose();
+		ToggleMenus();
 	}
 
 	void TWinOrLose()
@@ -40,5 +49,22 @@ public class HUDController : MonoBehaviour {
 			Time.timeScale = 0;
 		}
 
+	}
+
+	void ToggleMenus()
+	{
+		if (Input.GetButton("Start") && !isActive)
+		{
+			hudObject.SetActive(false);
+			pauseMenu.SetActive(true);
+			isActive = true;
+		}
+
+		else if (Input.GetButton("Start") && isActive)
+		{
+			hudObject.SetActive(true);
+			pauseMenu.SetActive(false);
+			isActive = true;
+		}
 	}
 }
