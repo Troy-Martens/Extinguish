@@ -19,6 +19,7 @@ public class WaterParticleController : MonoBehaviour
 	public bool addForce = false;
 	public LayerMask waterLayer;
 
+
 	public float buoyancyForce = 2f;
 	public enum WaterState
 	{
@@ -41,7 +42,6 @@ public class WaterParticleController : MonoBehaviour
 	void FixWaterInteraction()
 	{
 		col2D.isTrigger = true;
-		Debug.Log("Making child collider a trigger");
 	}
 
 	// Update is called once per frame
@@ -65,35 +65,9 @@ public class WaterParticleController : MonoBehaviour
 		}
 	}
 
-	//void OnTriggerEnter2D(Collider2D other)
-	//{
-	//	if (other.gameObject.GetComponent<WaterParticleController>() != null)
-	//	{
-	//		if (other.gameObject.GetComponent<Rigidbody2D>().velocity.magnitude != 0)
-	//		{
-	//			Rigidbody2D otherRB2D = other.GetComponent<Rigidbody2D>();
-	//			rb2d.velocity = otherRB2D.velocity / 2;
-	//		}
-	//
-	//	}
-	//}
-	//
-	//void OnTriggerStay2D(Collider2D other)
-	//{
-	//	if (other.gameObject.GetComponent<WaterParticleController>() != null)
-	//	{
-	//
-	//		Rigidbody2D otherRB2D = other.GetComponent<Rigidbody2D>();
-	//		otherRB2D.AddForce(Vector2.down * 2);
-	//	}
-	//}
 
-	//oid OnTriggerStay2D(Collider2D other)
-	//
-	//	if (other.gameObject.GetComponent<Float>() != null)
-	//	{
-	//		if (waterState == WaterState.Buoyant)
-	//		other.gameObject.GetComponent<Rigidbody2D>().AddForce(Vector2.up * buoyancyForce);
-	//	}
-	//
+
+	void OnCollisionStay2D(Collision2D collision)
+	{
+	}
 }

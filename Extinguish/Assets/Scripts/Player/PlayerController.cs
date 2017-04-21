@@ -159,13 +159,14 @@ public class PlayerController : MonoBehaviour {
 
 
 
-		if (Input.GetAxis("Horizontal") > 0)
+		if (Input.GetAxis("Horizontal") > 0 && playerState != PlayerStates.Extinguishing)
 		{
 			rb2d.AddForce(transform.right * playerSpeed * horizontalInput);
 			if (rb2d.velocity.magnitude > 0.1f && grounded)
 			playerState = PlayerStates.Walking;
 		}
-		if (Input.GetAxis("Horizontal") < 0)
+
+		if (Input.GetAxis("Horizontal") < 0 && playerState != PlayerStates.Extinguishing) 
 		{
 			rb2d.AddForce(transform.right * horizontalInput * playerSpeed);
 			if (rb2d.velocity.magnitude > 0.1f && grounded)
@@ -176,15 +177,18 @@ public class PlayerController : MonoBehaviour {
 		{
 			playerState = PlayerStates.Extinguishing;
 			//rb2d.mass = 500;
-			rb2d.velocity = new Vector3(0,0,0);
+			//rb2d.velocity = new Vector3(0,0,0);
+
+
 
 			// Spawn water;
 			PlayerSpray();
 
 		}
-		else
+
+		else if (rb2d.velocity.magnitude < 0.1f && grounded)
 		{
-			rb2d.mass = defaultMass;
+			playerState = PlayerStates.Idle;
 		}
 
 		if (jump && playerState != PlayerStates.Extinguishing)
