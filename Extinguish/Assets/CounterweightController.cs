@@ -13,9 +13,12 @@ public class CounterweightController : MonoBehaviour {
 	public float yTargetTop;
 	public float yTargetBottom;
 
+	public Rigidbody2D rb2d;
+
 	// Use this for initialization
-	void Start () {
-		
+	void Start ()
+	{
+		rb2d = GetComponent<Rigidbody2D>();
 	}
 	
 	// Update is called once per frame
@@ -46,6 +49,8 @@ public class CounterweightController : MonoBehaviour {
 
 		}
 	}
+
+
 
 
 }
