@@ -197,8 +197,6 @@ public class PlayerController : MonoBehaviour {
 			rb2d.AddForce(new Vector2(0f, jumpForce));
 			playerState = PlayerStates.Jumping;
 		}
-
-
 	}
 
 

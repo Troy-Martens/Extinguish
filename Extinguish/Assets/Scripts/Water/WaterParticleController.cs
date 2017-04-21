@@ -19,6 +19,7 @@ public class WaterParticleController : MonoBehaviour
 	public bool addForce = false;
 	public LayerMask waterLayer;
 
+	public float waterSepForce = 1;
 
 	public float buoyancyForce = 2f;
 	public enum WaterState
@@ -65,9 +66,21 @@ public class WaterParticleController : MonoBehaviour
 		}
 	}
 
+	//a list of all water connected to us
 
+	/*
+	 * add on enter
+	 * remove on exit
+	 * 
+	 * in fixed update if length > 2 
+	 *	push...
+	 */
 
 	void OnCollisionStay2D(Collision2D collision)
 	{
+		if(collision.collider.CompareTag("Water") )//&& transform.position.y > collision.collider.transform.position.y)
+		{
+			rb2d.AddForce(collision.contacts[0].normal * waterSepForce);
+		}
 	}
 }
