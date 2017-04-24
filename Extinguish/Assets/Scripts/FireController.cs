@@ -2,21 +2,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FireCollision : MonoBehaviour {
+public class FireController : MonoBehaviour
+{
 
 	public ParticleSystem particleSystem;
+	public BuildingController parentBuilding;
+
 	public int initialParticles;
 
 	// Use this for initialization
-	void Start () {
+	void Start ()
+	{
 		particleSystem = GetComponent<ParticleSystem>();
 		initialParticles = particleSystem.maxParticles;
+		parentBuilding = GetComponentInParent<BuildingController>();
 		InvokeRepeating("RestoreFlame", 1.0f, 1.0f);
 	}
 	
 	// Update is called once per frame
 	void Update ()
 	{
+
 	}
 
 	void FixedUpdate()
@@ -32,22 +38,21 @@ public class FireCollision : MonoBehaviour {
 		{
 			// Building is safe.
 			Destroy(this.gameObject);
-			FindObjectOfType<HUDController>().fireOut = true;
 		}
 	}
 
 	void OnParticleCollision(GameObject other)
 	{
 		Debug.Log("Col: " + other.gameObject.name);
-		if (other.GetComponent<WaterParticleController>() != null)
+		if (other.gameObject.CompareTag("Water"))
 		{
-			particleSystem.maxParticles -= 2;
-			Destroy(other);
+			particleSystem.maxParticles -= 1;
+			Destroy(other.gameObject);
 		}
 
-		if (other.GetComponent<PlayerController>() != null)
+		if (other.gameObject.GetComponent<PlayerController>() != null)
 		{
-			other.GetComponent<PlayerController>().playerState = PlayerController.PlayerStates.Dead;
+			other.gameObject.GetComponent<PlayerController>().playerState = PlayerController.PlayerStates.Dead;
 		}
 	}
 }

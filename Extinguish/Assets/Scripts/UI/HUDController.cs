@@ -5,35 +5,61 @@ using UnityEngine.UI;
 
 public class HUDController : MonoBehaviour
 {
-
+	#region Variables
 	public Slider slider;
 	public Text winText;
 	public Text loseText;
 
-	public bool fireOut = false;
-
 	public PlayerController playerController;
 	public GameController gameController;
+	public BuildingManager buildingManager;
 
 	public GameObject pauseMenu;
-	public GameObject hudObject;
+	public GameObject activeMenu;
+	public GameObject buildingUIPrefab;
+
+	public Slider globalHealth;
+	public Slider paragonSlider;
+
+	public VerticalLayoutGroup buildingTracker;
+	public BuildingController[] buildings;
+
+	public Button resumeButton;
+	public Button exitButton;
+	#endregion
+
+
+	public float[] buildingMaxHealth;
 
 	public bool isActive = false;
 
+	public enum HUDState
+	{
+		Active,
+		Paused
+	}
+
+	public HUDState hudState;
 	// Use this for initialization
 	void Start ()
 	{
 		slider = GetComponentInChildren<Slider>();
 		playerController = FindObjectOfType<PlayerController>();
 		gameController = FindObjectOfType<GameController>();
+		buildingManager = FindObjectOfType<BuildingManager>();
+
+		globalHealth.maxValue = buildingManager.globalCasualtyMax;
+		hudState = HUDState.Active;
 	}
 	
 	// Update is called once per frame
 	void Update ()
 	{
 		slider.value = playerController.waterTankTime;
-		TWinOrLose();
-		ToggleMenus();
+		paragonSlider.value = gameController.currentParagon;
+
+		AddBuildingsToTracker();
+		TrackBuildingStats();
 	}
 
 	void TWinOrLose()
@@ -43,28 +69,48 @@ public class HUDController : MonoBehaviour
 			loseText.gameObject.SetActive(true);
 			Time.timeScale = 0;
 		}
-		else if (fireOut)
-		{
-			winText.gameObject.SetActive(true);
-			Time.timeScale = 0;
-		}
-
 	}
 
-	void ToggleMenus()
+	public void ToggleMenus()
 	{
-		if (Input.GetButton("Start") && !isActive)
+		if (hudState == HUDState.Active)
 		{
-			hudObject.SetActive(false);
 			pauseMenu.SetActive(true);
-			isActive = true;
+			activeMenu.SetActive(false);
+			gameController.gameState = GameController.GameStates.GameActive;	
 		}
 
-		else if (Input.GetButton("Start") && isActive)
+		if (hudState == HUDState.Paused)
 		{
-			hudObject.SetActive(true);
 			pauseMenu.SetActive(false);
-			isActive = true;
+			activeMenu.SetActive(true);
+			gameController.gameState = GameController.GameStates.GamePaused;
+
 		}
+	}
+
+	void AddBuildingsToTracker()
+	{
+		buildings = FindObjectsOfType<BuildingController>();
+
+		for (int i = 0; i < buildings.Length; i++)
+		{
+		}
+	}
+
+	void TrackBuildingStats()
+	{
+		globalHealth.value = buildingManager.currentGlobalHealth;
+	}
+
+	void OnClick_ResumeButton()
+	{
+		hudState = HUDState.Active;
+		ToggleMenus();
+	}
+
+	void OnClick_ExitButton()
+	{
+		Application.Quit();
 	}
 }
