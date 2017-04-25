@@ -11,12 +11,14 @@ public class BuildingController : MonoBehaviour
 
 	public int buildingTotalValue;
 
+	public int amountOfFires = 0;
+
 	public bool isBurning;
 
 	public bool buildingDestroyed = false;
 	public bool buildingSaved = false;
 
-	public float fireDamageAmount = 1f;
+	public int fireDamageAmount = 0;
 
 	public float maxBuildingHealth;
 	public float currentHealth;
@@ -31,6 +33,8 @@ public class BuildingController : MonoBehaviour
 
 	public GameObject healthBar;
 	public Collider2D buildingCollider;
+
+	public GameObject explosionPrefab;
 
 
 	// Classes
@@ -58,13 +62,16 @@ public class BuildingController : MonoBehaviour
 	public BuildingValue buildingValue;
 	#endregion
 
+	void Awake()
+	{
+		SetBuildingValues();
+	}
+
 	// Use this for initialization
 	void Start ()
 	{
+
 		gameController = FindObjectOfType<GameController>();
-
-
-		SetBuildingValues();
 
 		currentHealth = maxBuildingHealth;
 
@@ -73,6 +80,7 @@ public class BuildingController : MonoBehaviour
 		InstantiateFires();
 		InvokeRepeating("FireDamage", 1f, 1f);
 		amountOfCashDrops = buildingTotalValue / cashDropValue;
+
 	}
 
 	// Update is called once per frame
@@ -90,12 +98,15 @@ public class BuildingController : MonoBehaviour
 		{
 			case BuildingType.Large:
 				maxBuildingHealth = largeBuildingHealth;
+				Debug.Log("!1");
 				break;
 			case BuildingType.Medium:
 				maxBuildingHealth = mediumBuildingHealth;
+				Debug.Log("!12");
 				break;
 			case BuildingType.Small:
 				maxBuildingHealth = smallBuildingHealth;
+				Debug.Log("!13");
 				break;
 		}
 
@@ -126,8 +137,8 @@ public class BuildingController : MonoBehaviour
 	{
 		if (currentHealth <= 0)
 			buildingDestroyed = true;
-		//if (localFires.Length <= 0)
-		//	buildingSaved = true;
+		if (amountOfFires <= 0)
+			buildingSaved = true;
 
 		if (buildingDestroyed)
 		{
@@ -138,7 +149,9 @@ public class BuildingController : MonoBehaviour
 			}
 
 			gameController.currentParagon -= paragonValue;
-			Destroy(this.gameObject);
+			Instantiate(explosionPrefab, this.transform.position, this.transform.rotation);
+			gameController.buildingsSolved += 1;
+			this.gameObject.SetActive(false);
 			// Play destruction audio.
 			// Destroy game object. Instantiate destroy particle effect.
 		}
@@ -146,7 +159,8 @@ public class BuildingController : MonoBehaviour
 		if (buildingSaved)
 		{
 			gameController.currentParagon += paragonValue;
-			this.gameObject.SetActive(false);
+			gameController.buildingsSolved += 1;
+			enabled = false;
 		}
 	}
 
@@ -154,7 +168,7 @@ public class BuildingController : MonoBehaviour
 	{
 		if (healthPercentage > 0)
 		healthPercentage = (currentHealth / maxBuildingHealth);
-
+		healthBar.transform.localScale = new Vector2(1 * healthPercentage, healthBar.transform.localScale.y);
 	}
 
 	void InstantiateFires()
@@ -163,6 +177,7 @@ public class BuildingController : MonoBehaviour
 		for (int i = 0; i < localFires.Length; i++)
 		{
 			fireDamageAmount += 1;
+			amountOfFires += 1;
 		}
 	}
 }

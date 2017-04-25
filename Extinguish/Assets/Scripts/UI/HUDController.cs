@@ -16,16 +16,22 @@ public class HUDController : MonoBehaviour
 
 	public GameObject pauseMenu;
 	public GameObject activeMenu;
-	public GameObject buildingUIPrefab;
+	public List<Slider> buildingUITrackers;
+	public GameObject buildingUITrackerPrefab;
+	public GameObject buildingUIPanel;
 
 	public Slider globalHealth;
 	public Slider paragonSlider;
 
 	public VerticalLayoutGroup buildingTracker;
-	public BuildingController[] buildings;
+	public List<BuildingController> buildings;
 
-	public Button resumeButton;
-	public Button exitButton;
+	public bool fadeOut = false;
+	public bool fadeIn = false;
+	public Image uiImage;
+
+	public float yOffset = 2;
+
 	#endregion
 
 
@@ -43,6 +49,9 @@ public class HUDController : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
+		fadeIn = false;
+		fadeOut = true;
+
 		slider = GetComponentInChildren<Slider>();
 		playerController = FindObjectOfType<PlayerController>();
 		gameController = FindObjectOfType<GameController>();
@@ -50,67 +59,90 @@ public class HUDController : MonoBehaviour
 
 		globalHealth.maxValue = buildingManager.globalCasualtyMax;
 		hudState = HUDState.Active;
+		gameController.hudController = this;
+		AddBuildingsToTracker();
 	}
-	
+
 	// Update is called once per frame
 	void Update ()
 	{
-		slider.value = playerController.waterTankTime;
 		paragonSlider.value = gameController.currentParagon;
+		
 
-		AddBuildingsToTracker();
+		FadeInOut();
 		TrackBuildingStats();
-	}
-
-	void TWinOrLose()
-	{
-		if (playerController.waterTankTime <= 0)
-		{
-			loseText.gameObject.SetActive(true);
-			Time.timeScale = 0;
-		}
 	}
 
 	public void ToggleMenus()
 	{
 		if (hudState == HUDState.Active)
 		{
-			pauseMenu.SetActive(true);
-			activeMenu.SetActive(false);
-			gameController.gameState = GameController.GameStates.GameActive;	
+			pauseMenu.SetActive(false);
+			activeMenu.SetActive(true);
+			gameController.gameState = GameController.GameStates.GameActive;
+			Debug.Log("HUD ACTIVE");	
 		}
 
 		if (hudState == HUDState.Paused)
 		{
-			pauseMenu.SetActive(false);
-			activeMenu.SetActive(true);
+			pauseMenu.SetActive(true);
+			activeMenu.SetActive(false);
 			gameController.gameState = GameController.GameStates.GamePaused;
-
+			Debug.Log("PAUSE ACTIVE");
 		}
 	}
 
 	void AddBuildingsToTracker()
 	{
-		buildings = FindObjectsOfType<BuildingController>();
+		buildings.AddRange(FindObjectsOfType<BuildingController>());
 
-		for (int i = 0; i < buildings.Length; i++)
+		for (int i = 0; i < buildings.Count; i++)
 		{
+			GameObject trackerClone = Instantiate(buildingUITrackerPrefab, buildingUIPanel.transform);
+			buildingUITrackers.Add(trackerClone.GetComponent<Slider>());
 		}
 	}
 
 	void TrackBuildingStats()
 	{
 		globalHealth.value = buildingManager.currentGlobalHealth;
+
+		for (int i = 0; i < buildings.Count; i++)
+		{
+			buildingUITrackers[i].maxValue = 1;
+			buildingUITrackers[i].value = (buildings[i].currentHealth / buildings[i].maxBuildingHealth) * 1;
+		}
 	}
 
-	void OnClick_ResumeButton()
+	public void OnClick_ResumeButton()
 	{
 		hudState = HUDState.Active;
 		ToggleMenus();
 	}
 
-	void OnClick_ExitButton()
+	public void OnClick_ExitButton()
 	{
 		Application.Quit();
+	}
+
+
+	public void OnClick_ReloadLevel()
+	{
+		gameController.ReloadCurrentLevel();
+	}
+
+	void UpdateHUD()
+	{
+	}
+
+	void FadeInOut()
+	{
+		if (fadeOut)
+		{
+			uiImage.canvasRenderer.SetAlpha(1f);
+			uiImage.CrossFadeAlpha(0f, 1, false);
+			fadeOut = false;
+			fadeIn = true;
+		}
 	}
 }

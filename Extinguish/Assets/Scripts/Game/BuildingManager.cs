@@ -46,10 +46,18 @@ public class BuildingManager : MonoBehaviour
 
 		for (int i = 0; i < buildings.Length; i++)
 		{
+			Debug.Log(i);
 			globalCasualtyMax += buildings[i].maxBuildingHealth;
+			Debug.Log("B" + buildings[i].maxBuildingHealth);
+
 			buildings[i].moneyDropsPrefab = moneyDropPrefab;
 		}
 
+	}
+	
+	void UpdateBuildings()
+	{
+		buildings = FindObjectsOfType<BuildingController>();
 	}
 
 }

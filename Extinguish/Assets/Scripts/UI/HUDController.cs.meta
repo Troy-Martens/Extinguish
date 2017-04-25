@@ -1,10 +1,26 @@
 fileFormatVersion: 2
 guid: 0c5850075f6846749b06211d959c790f
-timeCreated: 1491959642
-licenseType: Pro
+timeCreated: 1493113609
+licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - slider: {instanceID: 0}
+  - winText: {instanceID: 0}
+  - loseText: {instanceID: 0}
+  - playerController: {instanceID: 0}
+  - gameController: {instanceID: 0}
+  - buildingManager: {instanceID: 0}
+  - pauseMenu: {instanceID: 0}
+  - activeMenu: {instanceID: 0}
+  - buildingUIPrefab: {instanceID: 0}
+  - globalHealth: {instanceID: 0}
+  - paragonSlider: {instanceID: 0}
+  - buildingTracker: {instanceID: 0}
+  - resumeButton: {instanceID: 0}
+  - exitButton: {instanceID: 0}
+  - waterBar: {instanceID: 0}
+  - waterBarFill: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

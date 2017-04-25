@@ -37,6 +37,9 @@ public class FireController : MonoBehaviour
 		if (particleSystem.maxParticles <= 0)
 		{
 			// Building is safe.
+			parentBuilding.fireDamageAmount -= 1;
+			parentBuilding.amountOfFires -= 1;
+
 			Destroy(this.gameObject);
 		}
 	}

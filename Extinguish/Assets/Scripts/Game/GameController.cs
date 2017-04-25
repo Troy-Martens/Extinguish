@@ -13,25 +13,29 @@ public class GameController : MonoBehaviour
 
 	public int currentLevel;
 
-	bool playerWon;
-	bool playerLost;
+	public int buildingsSolved;
+
+	public bool playerWon;
+	public bool playerLost;
 
 	bool isEvil = false;
 
 	public HUDController hudController;
+	public BuildingManager buildingManager;
 
 	public enum GameStates
 	{
 		GameActive,
 		GamePaused,
 		GameOver,
-		GameLoading
+		LevelComplete
 	}
 
 	public GameStates gameState;
 
 	void Awake()
 	{
+		hudController = FindObjectOfType<HUDController>();
 	}
 
 	// Use this for initialization
@@ -40,16 +44,36 @@ public class GameController : MonoBehaviour
 		Time.timeScale = 1;
 		gameState = GameStates.GameActive;
 		SceneManager.LoadSceneAsync(Scenes.HUD, LoadSceneMode.Additive);
-		hudController = FindObjectOfType<HUDController>();
+		buildingManager = FindObjectOfType<BuildingManager>();
+
+		PlayerPrefs.SetString("CurrentScene", SceneManager.GetActiveScene().name);
+
+
+		if (SceneManager.GetActiveScene() == SceneManager.GetSceneByName(Scenes.LevelOne))
+		{
+			Debug.Log("Level One Loaded");
+			PlayerPrefs.SetInt("Paragon", 50);
+			PlayerPrefs.SetInt("Money", 0);
+		}
+
+		currentParagon = PlayerPrefs.GetInt("Paragon");
+		currentMoney = PlayerPrefs.GetInt("Money");
 	}
 
+	
 	// Update is called once per frame
 	void Update ()
 	{
 		if (Input.GetKeyDown(KeyCode.R))
 		{
-			Application.LoadLevel(Application.loadedLevel);
+			ReloadCurrentLevel();
 		}
+
+		Mathf.Clamp(currentParagon, 0, 100);
+
+		GameStateTracker();
+		InputManagement();
+
 	}
 
 	void GameStateTracker()
@@ -58,11 +82,22 @@ public class GameController : MonoBehaviour
 		{
 			case GameStates.GameActive:
 				Time.timeScale = 1f;
+
+				if (buildingsSolved >= buildingManager.buildings.Length)
+				{
+					playerWon = true;
+				} 
+
 				break;
 			case GameStates.GamePaused:
 				Time.timeScale = 0f;
 				break;
 			case GameStates.GameOver:
+				playerLost = true;
+				Invoke("LoadNextLevel", 1.0f);
+				break;
+			case GameStates.LevelComplete:
+				playerWon = true;
 				LoadNextLevel();
 				break;
 		}
@@ -70,13 +105,13 @@ public class GameController : MonoBehaviour
 
 	void InputManagement()
 	{
-		if (Input.GetKey("Pause") && gameState != (GameStates.GamePaused | GameStates.GameOver))
+		if (Input.GetButtonDown("Start") && gameState != GameStates.GamePaused)
 		{
 			hudController.hudState = HUDController.HUDState.Paused;
 			hudController.ToggleMenus();
 		}
 
-		if (Input.GetKey("Pause") && gameState != GameStates.GameOver && gameState == GameStates.GamePaused)
+		else if (Input.GetButtonDown("Start") && gameState == GameStates.GamePaused)
 		{
 			hudController.hudState = HUDController.HUDState.Active;
 			hudController.ToggleMenus();
@@ -89,14 +124,27 @@ public class GameController : MonoBehaviour
 		{
 			if (SceneManager.GetActiveScene() == SceneManager.GetSceneByName(Scenes.LevelOne))
 			{
+				Debug.Log("W1");
 				PlayerPrefs.SetInt("Paragon", currentParagon);
 				PlayerPrefs.SetInt("Money", currentMoney);
+				SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+				enabled = false;
 			}
 
-			else
+			else if (SceneManager.GetActiveScene() != SceneManager.GetSceneByName(Scenes.LevelOne) && SceneManager.GetActiveScene() != SceneManager.GetSceneByName(Scenes.LevelThree))
 			{
+				Debug.Log("W2");
 				PlayerPrefs.SetInt("Paragon", (PlayerPrefs.GetInt("Paragon") + currentParagon));
 				PlayerPrefs.SetInt("Money", (PlayerPrefs.GetInt("Money") + currentParagon));
+				SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+			}
+
+			else if (SceneManager.GetActiveScene() == SceneManager.GetSceneByName(Scenes.LevelThree))
+			{
+				Debug.Log("W3");
+				PlayerPrefs.SetInt("Paragon", (PlayerPrefs.GetInt("Paragon") + currentParagon));
+				PlayerPrefs.SetInt("Money", (PlayerPrefs.GetInt("Money") + currentParagon));
+				SceneManager.LoadScene(Scenes.WinScreen);
 			}
 		}
 
@@ -106,6 +154,11 @@ public class GameController : MonoBehaviour
 			PlayerPrefs.SetString("GameOverCondition", "Lost");
 			SceneManager.LoadScene(Scenes.GameOver);
 		}
+	}
+
+	public void ReloadCurrentLevel()
+	{
+		Application.LoadLevel(Application.loadedLevel);
 	}
 
 }

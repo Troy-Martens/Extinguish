@@ -10,5 +10,6 @@ public class Scenes : MonoBehaviour
 	public static string LevelTwo = "LevelTwo";
 	public static string LevelThree = "LevelThree";
 	public static string GameOver = "GameOver";
+	public static string WinScreen = "WinScreen";
 	
 }

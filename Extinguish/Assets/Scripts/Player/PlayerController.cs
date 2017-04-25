@@ -1,9 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
 
+	#region Class Variables
 	public float playerSpeed = 5.0f;
 	public float jumpForce = 10.0f;
 	public float maxSpeed = 5f;
@@ -14,12 +16,15 @@ public class PlayerController : MonoBehaviour {
 
 	public float sprayForce = 5.0f;
 
+	public int sprayParticleCount = 1;
+
 	public bool grounded = false;
 	public bool jump = true;
 	public bool facingRight;
 
 	public bool shoot;
-	public float waterTankTime = 10.0f;
+	public float waterTankTime;
+	public float waterTankTimeBase = 10f;
 
 	public GameObject groundCheck;
 	public Transform rotatingArm;
@@ -33,6 +38,8 @@ public class PlayerController : MonoBehaviour {
 	public GameObject waterParticlePrefab;
 	public GameObject barrelPosition;
 
+	public GameObject waterBar;
+
 	public bool sprayReset;
 	public float sprayDelayB = 0.5f;
 	float sprayDelayC;
@@ -43,6 +50,10 @@ public class PlayerController : MonoBehaviour {
 	public float drownTimerCurrent;
 
 	public bool isDrowning = false;
+
+	public Image waterFill;
+
+	#endregion
 
 	public enum PlayerStates
 	{
@@ -56,7 +67,7 @@ public class PlayerController : MonoBehaviour {
 
 	public PlayerStates playerState;
 
-
+	#region Unity Functions
 	// Use this for initialization
 	void Start ()
 	{
@@ -67,8 +78,10 @@ public class PlayerController : MonoBehaviour {
 		defaultMass = rb2d.mass;
 		drownTimerCurrent = drownTimerBase;
 		gameController = FindObjectOfType<GameController>();
+		waterTankTime = waterTankTimeBase;
 	}
-	
+
+
 	// Update is called once per frame
 	void Update ()
 	{
@@ -109,6 +122,7 @@ public class PlayerController : MonoBehaviour {
 		PlayerStateManager();
 		DrownTracker();
 		PlayerStateManager();
+		UpdateHUD();
 	}
 
 	void FixedUpdate()
@@ -123,6 +137,7 @@ public class PlayerController : MonoBehaviour {
 			rotatingArm.Rotate(0f, 0f, verticalInput * 50f);
 		}
 	}
+	#endregion
 
 	void FlipPlayer()
 	{
@@ -211,7 +226,6 @@ public class PlayerController : MonoBehaviour {
 			case PlayerStates.Extinguishing:
 				break;
 			case PlayerStates.Walking:
-
 				break;
 			case PlayerStates.Idle:
 				break;
@@ -226,15 +240,14 @@ public class PlayerController : MonoBehaviour {
 		{
 			if (horizontalInput > 0 && waterTankTime > 0)
 			{
-				GameObject waterParticleClone = Instantiate(waterParticlePrefab, barrelPosition.transform.position, barrelPosition.transform.rotation);
-				waterParticleClone.GetComponent<Rigidbody2D>().AddForce(barrelPosition.transform.right * sprayForce);
+				InstantiateWaterSpray(false, 0.05f);
 				sprayReset = false;
 				waterTankTime -= Time.deltaTime;
+
 			}
 			else if (horizontalInput < 0 && waterTankTime > 0)
 			{
-				GameObject waterParticleClone = Instantiate(waterParticlePrefab, barrelPosition.transform.position, barrelPosition.transform.rotation);
-				waterParticleClone.GetComponent<Rigidbody2D>().AddForce(barrelPosition.transform.right * sprayForce * -1);
+				InstantiateWaterSpray(true, 0.05f);
 				sprayReset = false;
 				waterTankTime -= Time.deltaTime;
 			}
@@ -246,10 +259,12 @@ public class PlayerController : MonoBehaviour {
 		if (isDrowning)
 		{
 			drownTimerCurrent -= Time.deltaTime;
+			// Set drowning audio active.
 		}
 		else
 		{
 			drownTimerCurrent = drownTimerBase;
+			// Set drowning audio inactive.
 		}
 
 		if (drownTimerCurrent <= 0)
@@ -258,4 +273,46 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
+	void InstantiateWaterSpray(bool reversed, float offsetAmount)
+	{
+		float offset = 0;
+		for (int i = 0; i < sprayParticleCount; i++)
+		{
+			if (!reversed)
+			{
+				GameObject waterParticleClone = Instantiate(waterParticlePrefab, new Vector2(barrelPosition.transform.position.x, (barrelPosition.transform.position.y + offset)), barrelPosition.transform.rotation);
+				waterParticleClone.GetComponent<Rigidbody2D>().AddForce(barrelPosition.transform.right * sprayForce);
+			}
+			else
+			{
+				//GameObject waterParticleClone = Instantiate(waterParticlePrefab, barrelPosition.transform.position, barrelPosition.transform.rotation);
+				GameObject waterParticleClone = Instantiate(waterParticlePrefab, new Vector2(barrelPosition.transform.position.x, (barrelPosition.transform.position.y + offset)), barrelPosition.transform.rotation);
+				waterParticleClone.GetComponent<Rigidbody2D>().AddForce(barrelPosition.transform.right * sprayForce * -1);
+			}
+			offset += offsetAmount;
+		}
+	}
+
+	void UpdateHUD()
+	{
+		// Fuck my life, I really shouldn't have just flipped the player transform.
+		// Fuck my life, why did I want to have an easy to edit additive HUD scene
+		// with no contingency for... I just realised I could have just added the
+		// water bar into the HUD scene and manually set it's position to the player + y offset...
+		// Fuck... fuckity fuck fuck. Fuck.
+
+		waterBar.transform.localScale = new Vector2((1 * (waterTankTime / waterTankTimeBase)), waterBar.transform.localScale.y);
+		if (transform.localScale.x < 0)
+		{
+			waterFill.rectTransform.anchorMin = new Vector2(1, 0.5f);
+			waterFill.rectTransform.anchorMax = new Vector2(1, 0.5f);
+			waterFill.rectTransform.pivot = new Vector2(1, 0.5f);
+		}
+		else
+		{
+			waterFill.rectTransform.anchorMin = new Vector2(0, 0.5f);
+			waterFill.rectTransform.anchorMax = new Vector2(0, 0.5f);
+			waterFill.rectTransform.pivot = new Vector2(0, 0.5f);
+		}
+	}
 }

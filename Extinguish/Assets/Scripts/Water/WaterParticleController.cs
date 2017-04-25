@@ -22,6 +22,7 @@ public class WaterParticleController : MonoBehaviour
 	public float waterSepForce = 1;
 
 	public float buoyancyForce = 2f;
+
 	public enum WaterState
 	{
 		Active,
@@ -78,7 +79,7 @@ public class WaterParticleController : MonoBehaviour
 
 	void OnCollisionStay2D(Collision2D collision)
 	{
-		if(collision.collider.CompareTag("Water") )//&& transform.position.y > collision.collider.transform.position.y)
+		if(collision.collider.CompareTag("Water"))//&& transform.position.y > collision.collider.transform.position.y)
 		{
 			rb2d.AddForce(collision.contacts[0].normal * waterSepForce);
 		}
