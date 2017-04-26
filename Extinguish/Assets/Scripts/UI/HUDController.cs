@@ -56,7 +56,7 @@ public class HUDController : MonoBehaviour
 		playerController = FindObjectOfType<PlayerController>();
 		gameController = FindObjectOfType<GameController>();
 		buildingManager = FindObjectOfType<BuildingManager>();
-
+			
 		globalHealth.maxValue = buildingManager.globalCasualtyMax;
 		hudState = HUDState.Active;
 		gameController.hudController = this;

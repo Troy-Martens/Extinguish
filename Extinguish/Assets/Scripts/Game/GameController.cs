@@ -36,6 +36,8 @@ public class GameController : MonoBehaviour
 	void Awake()
 	{
 		hudController = FindObjectOfType<HUDController>();
+		PlayerPrefs.SetString("CurrentLevel", SceneManager.GetActiveScene().name);
+
 	}
 
 	// Use this for initialization
@@ -46,7 +48,7 @@ public class GameController : MonoBehaviour
 		SceneManager.LoadSceneAsync(Scenes.HUD, LoadSceneMode.Additive);
 		buildingManager = FindObjectOfType<BuildingManager>();
 
-		PlayerPrefs.SetString("CurrentScene", SceneManager.GetActiveScene().name);
+		PlayerPrefs.SetString("CurrentLevel", SceneManager.GetActiveScene().name);
 
 
 		if (SceneManager.GetActiveScene() == SceneManager.GetSceneByName(Scenes.LevelOne))
@@ -120,7 +122,15 @@ public class GameController : MonoBehaviour
 
 	void LoadNextLevel()
 	{
-		if (playerWon)
+		
+		if (playerLost)
+		{
+			// Load game over ("Replay? Quit?")
+			PlayerPrefs.SetString("GameOverCondition", "Lost");
+			SceneManager.LoadScene(Scenes.GameOver);
+		}
+
+		else if (playerWon)
 		{
 			if (SceneManager.GetActiveScene() == SceneManager.GetSceneByName(Scenes.LevelOne))
 			{
@@ -148,12 +158,6 @@ public class GameController : MonoBehaviour
 			}
 		}
 
-		else if (playerLost)
-		{
-			// Load game over ("Replay? Quit?")
-			PlayerPrefs.SetString("GameOverCondition", "Lost");
-			SceneManager.LoadScene(Scenes.GameOver);
-		}
 	}
 
 	public void ReloadCurrentLevel()
